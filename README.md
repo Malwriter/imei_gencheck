@@ -23,4 +23,4 @@ This won't depend (i hope) on anything but:
 "devDependencies" are kinda optional. You don't need them unless wanna check tested features working.
 As of 0.10:
 
-![Image of Yaktocat](https://user-images.githubusercontent.com/31159979/29487436-8c0621dc-8501-11e7-8f94-84aa83de24bd.PNG)
+![Image of Yaktocat](https://user-images.githubusercontent.com/31159979/29488858-f80aa51e-851b-11e7-87c3-4471a01e8fb8.PNG)
