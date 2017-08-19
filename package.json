@@ -1,6 +1,6 @@
 {
   "name": "imei_gencheck",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Uses tacdb.osmocom.org TAC DB for generating and checking IMEIs and searching for TAC info.",
   "main": "index.js",
   "directories": {
@@ -25,7 +25,7 @@
     "blackhat",
     "serial",
     "helloworld",
-	"communications",
+	"communications"
   ],
   "repository": {
     "type": "git",
