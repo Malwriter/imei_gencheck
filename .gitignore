@@ -1,0 +1,11 @@
+# ignoring all of the MS VS and VS Code data
+.vscode/
+.vs/
+bin/
+obj/
+*.*proj
+*.sln
+
+# and also downloadable modules 
+(use "npm install" to get them)
+node_modules/

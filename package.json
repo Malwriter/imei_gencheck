@@ -1,0 +1,40 @@
+{
+  "name": "imei_gencheck",
+  "version": "1.0.0",
+  "description": "Uses tacdb.osmocom.org TAC DB for generating and checking IMEIs and searching for TAC info.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "async": "^2.5.0",
+    "checkdigit": "^1.1.1",
+    "chai": "^4.1.1",
+    "csv-parse": "^1.2.1"
+  },
+  "devDependencies": {
+    "mocha": "^3.5.0"
+  },
+  "scripts": {
+    "test": "mocha --reporter spec"
+  },
+  "keywords": [
+    "imei",
+	"tac",
+	"tacdb",
+    "blackhat",
+    "serial",
+    "helloworld",
+	"communications",
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Malwriter/imei_gencheck.git"
+  },
+  "author": "Malwriter",
+  "license": "Unlicense",
+  "bugs": {
+    "url": "https://github.com/Malwriter/imei_gencheck/issues"
+  },
+  "homepage": "https://github.com/Malwriter/imei_gencheck#readme"
+}
