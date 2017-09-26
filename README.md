@@ -30,7 +30,7 @@ To just randomize an IMEI:
 );
 ```
 _(this is likely to give an actually non-existent number)_
-<br/><br/>
+<br /><br />
 Here is the code to get the gencheck **DB** up:
 ```JS
     const imeigc = require("imei_gencheck");
@@ -40,17 +40,17 @@ Here is the code to get the gencheck **DB** up:
         console.log(rowsCount); // Sure no actual need for this, just a way to test that all gone well.
     });
 ```
-<br/>
+<br />
 And after the DB was put into RAM, some special functions become available. For example:
-```JS
+```js
     // Fully randomize an IMEI using a random TAC. Takes like zero time so not async.
     console.log(
       imeigc.randomIMEI_TACfromDB()
     );
 ```
-<br/>
+<br />
 And let's get something useful. Like a random iPhone 7 Plus IMEI:
-``` JS
+```js
     // This involves a search in DB (which i didn't optimize (yet?) at all), so it's async:
     imeigc.randomTACInfoWithNames("Apple", "iPhone 7 Plus")
     .then(imei=>{
