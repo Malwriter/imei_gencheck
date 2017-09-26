@@ -9,11 +9,11 @@
   "dependencies": {
     "async": "^2.5.0",
     "checkdigit": "^1.1.1",
-    "chai": "^4.1.1",
     "csv-parse": "^1.2.1"
   },
   "devDependencies": {
-    "mocha": "^3.5.0"
+    "mocha": "^3.5.0",
+    "chai": "^4.1.1"
   },
   "scripts": {
     "test": "mocha --reporter spec"
