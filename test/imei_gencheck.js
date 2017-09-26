@@ -6,7 +6,9 @@ describe("IMEI generator and checker:", function (){
     describe("(Using a TAC DB from tacdb.osmocom.org)", function (){
         it("loads the DB on demand from a CSV file in 'data' dir, allowing other functions usage", function (done){
             this.timeout(10000);
-            imei_gencheck.loadDB(()=>{
+            imei_gencheck.loadDB()
+            .then(rowCount=>{
+                expect(rowCount).to.above(25000);
                 expect(imei_gencheck.DB.length).to.above(25000);
                 done();
             });
@@ -40,14 +42,16 @@ describe("IMEI generator and checker:", function (){
         });
 
         it("Finds a TAC info for a given device vendor name",(done)=>{
-            imei_gencheck.randomTACInfoWithVendorName("Nokia", function(tacinfo){
+            imei_gencheck.randomTACInfoWithVendorName("Nokia")
+            .then( tacinfo => {
                 expect(tacinfo.name1.toLowerCase()).to.equal("nokia");
                 done();
             });            
         });
 
         it("Finds a TAC info for a given full device name (vendor and model as strings)",(done)=>{
-            imei_gencheck.randomTACInfoWithNames("Nokia", "1100b", function(tacinfo){
+            imei_gencheck.randomTACInfoWithNames("Nokia", "1100b")
+            .then( tacinfo => {
                 expect(tacinfo.tac).to.equal("1037200");
                 done();
             });
@@ -69,7 +73,8 @@ describe("IMEI generator and checker:", function (){
         });
         
         it("finds a given TAC in DB and returns a member from imei_gencheck.DB or null if fails to", function (done) {
-            imei_gencheck.findTACinfo("49013920", function (tacinfo){
+            imei_gencheck.findTACinfo("49013920")
+            .then( tacinfo => {
                 expect(tacinfo).to.deep.equal(
                     [ 
                         { 
@@ -91,7 +96,8 @@ describe("IMEI generator and checker:", function (){
         it("tries to find TAC infos for a given IMEI, returns null if none found",
         function (done){
             this.timeout(10000);
-            imei_gencheck.findTACInfoByIMEI("499901012345671", function (foundTACs){
+            imei_gencheck.findTACInfoByIMEI("499901012345671")
+            .then( foundTACs => {
                 expect(foundTACs).to.deep.equal(
                     [ 
                         { 
