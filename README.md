@@ -42,6 +42,7 @@ Here is the code to get the gencheck **DB** up:
 ```
 <br />
 And after the DB was put into RAM, some special functions become available. For example:
+
 ```JS
     console.log(
       // Fully randomize an IMEI using a random TAC. Takes like zero time so not async.
@@ -49,8 +50,9 @@ And after the DB was put into RAM, some special functions become available. For 
     );
 ```
 <br />
-And let's get something useful. Like a random iPhone 7 Plus IMEI:
-```jS
+And let us get something useful. Like a random iPhone 7 Plus IMEI:
+
+```JS
     imeigc.randomTACInfoWithNames("Apple", "iPhone 7 Plus")
     .then(imei=>{ // This involves a search in DB (which i didn't optimize (yet?) at all), so it's async:
         console.log(
