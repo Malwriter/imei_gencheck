@@ -77,7 +77,7 @@ imei_gencheck.loadDB = () => {
                     "aka":          line[7],
                     "gsmarena1":    line[5],
                     "gsmarena2":    line[6],
-                    "comment":      line[4],
+                    "comment":      line[3],
                     "type":         ""
                 };
 
