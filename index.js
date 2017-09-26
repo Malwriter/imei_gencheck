@@ -4,7 +4,7 @@ const async = require('async');
 
 // The original database is (at least it was) available from tacdb.osmocom.org
 // I have no idea how full is it. But it has my phone vendor's TACs.
-const tacdbFilePath='./node_modules/imei_gencheck/data/tacdb_consistent_sorted_clear.csv';
+const tacdbFilePath= __dirname + '/data/tacdb_consistent_sorted_clear.csv';
 const dbHeaders = ["tac","name","name","contributor","comment","gsmarena","gsmarena","aka","type"];
 
 // This one knows the Luhn algorythm
