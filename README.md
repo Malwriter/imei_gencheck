@@ -7,17 +7,18 @@ To use this, NPM is needed. Read about it whereever ya willing.
 Usually **npm install imei_gencheck** must be enough.
 This won't depend (i hope) on anything but:
 
-"devDependencies": {
+**"devDependencies"**: {
   "chai": "^4.1.1",
   "mocha": "^3.5.0"
 },
-"dependencies": {
+**"dependencies"**: {
   "async": "^2.5.0",
   "checkdigit": "^1.1.1",
   "csv-parse": "^1.2.1"
 }
-
+<br/>
 "devDependencies" are kinda optional. You don't need them unless wanna check tested features working.
+
 
 ## Features
 You can read the tests code in the file inside "test" directory. It pretty much sums up the possibilities and provides usage examples.
