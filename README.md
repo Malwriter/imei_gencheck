@@ -24,4 +24,4 @@ You can read the tests code in the file inside "test" directory. It pretty much 
 NOTE that some of the features are not implemented yet. Run "npm test" to see what is currently up an working.
 
 **As of 1.0.0**:
-![Image of Yaktocat](https://user-images.githubusercontent.com/31159979/29488858-f80aa51e-851b-11e7-87c3-4471a01e8fb8.PNG)
+![The testing results output](https://user-images.githubusercontent.com/31159979/29488858-f80aa51e-851b-11e7-87c3-4471a01e8fb8.PNG)
