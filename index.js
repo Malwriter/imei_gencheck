@@ -25,8 +25,8 @@ const IMEI_GenCheck = function(param_dbPath = '') {
     const searchIterationTimeout_ms = 3;
     
     // these will be overwritten as the DB will load.
-    let minTAClength = 0;
-    let maxTAClength = 15;
+    let minTAClength = 15;
+    let maxTAClength = 0;
 
     // This is called when the DB is already in RAM from inside LoadDB()
     // Initializes all the features accessing the database.
@@ -55,15 +55,15 @@ const IMEI_GenCheck = function(param_dbPath = '') {
 
         // *** FINDERS ***
 
-        this.findTACinfo = (tacToFind) => {
-        return new Promise((find_resolve, find_reject)=>{
+        this.findTACinfo = ((tacToFind) => {
+        return new Promise(((find_resolve, find_reject)=>{
             let foundTACs = [];
 
             let dblen = this.DB.length;
             let curIndex = 0;
             let perCycle = 1000;
 
-            let nonBlockingSearch = function (nonBlockingSearchCallBack) {
+            (function nonBlockingSearch () {
                 for (let i = 0; i < perCycle; i++) {
                     if (curIndex + i === dblen) {
                         break;
@@ -74,7 +74,10 @@ const IMEI_GenCheck = function(param_dbPath = '') {
                 }
                 curIndex += perCycle;
                 if (curIndex < dblen) {
-                    setTimeout(function () { nonBlockingSearchCallBack(nonBlockingSearchCallBack); }, this.searchIterationTimeout_ms);
+                    setTimeout(
+                        (function () { 
+                            nonBlockingSearch.call(this); 
+                        }).bind(this), this.searchIterationTimeout_ms);
                 }
                 else {
                     if (foundTACs.length > 0) {
@@ -83,25 +86,23 @@ const IMEI_GenCheck = function(param_dbPath = '') {
                         find_resolve(null);
                     }
                 }
-            }
-
-            nonBlockingSearch(nonBlockingSearch);
-        });
-        }
+            }).call(this);
+        }).bind(this));
+        }).bind(this);
 
         //todo: this one is begging for some parallelism
-        this.findTACInfoByIMEI = (imei) => {
-        return new Promise((find_resolve, find_reject)=>{
+        this.findTACInfoByIMEI = ((imei) => {
+        return new Promise(((find_resolve, find_reject)=>{
             
-            let curTAClength = this.minTAClength;
-
+            let curTAClength = minTAClength;
             let foundTACs = [];
 
-            recursiveTACSearch = function () {
+             (function recursiveTACSearch() {
+                
                 let tacToFind = imei.substr(0, curTAClength);
 
                 this.findTACinfo(tacToFind)
-                .then(iteration_foundTACs => {
+                .then((function (iteration_foundTACs){
                     if (iteration_foundTACs != null) {
                         for (let i = 0; i < iteration_foundTACs.length; i++) {
                             foundTACs.push(iteration_foundTACs[i]);
@@ -109,21 +110,19 @@ const IMEI_GenCheck = function(param_dbPath = '') {
                     }
 
                     curTAClength++;
-                    if (curTAClength > this.maxTAClength) {
+                    if (curTAClength > maxTAClength) {
                         if (foundTACs.length > 0) {
                             find_resolve(foundTACs);
                         } else {
                             find_resolve(null);
                         }
                     } else {
-                        recursiveTACSearch();
+                        recursiveTACSearch.call(this);
                     }
-                });
-            }
-
-            recursiveTACSearch();
-        });
-        };
+                }).bind(this));
+            }).call(this);
+        }).bind(this));
+        }).bind(this);
 
         this.randomTACInfoWithVendorName = (function (name1) {
         return new Promise(((find_resolve, find_reject)=>{
@@ -165,8 +164,8 @@ const IMEI_GenCheck = function(param_dbPath = '') {
         }).bind(this));
         }).bind(this)
 
-        this.randomTACInfoWithNames = (name1, name2) => {
-        return new Promise((find_resolve, find_reject)=>{
+        this.randomTACInfoWithNames = (function(name1, name2) {
+        return new Promise(((find_resolve, find_reject)=>{
             let nameToFind1 = name1.toLowerCase();
             let nameToFind2 = name2.toLowerCase();
             let foundTACs = [];
@@ -175,7 +174,7 @@ const IMEI_GenCheck = function(param_dbPath = '') {
             let curIndex = 0;
             let perCycle = 1000;
 
-            let nonBlockingSearch = function (nonBlockingSearchCallBack) {
+            (function nonBlockingSearch() {
                 //console.log(Date.now());
                 for (let i = 0; i < perCycle; i++) {
                     if (curIndex + i === dblen) {
@@ -191,9 +190,9 @@ const IMEI_GenCheck = function(param_dbPath = '') {
                 }
                 curIndex += perCycle;
                 if (curIndex < dblen) {
-                    setTimeout(function () { 
-                        nonBlockingSearchCallBack(nonBlockingSearchCallBack); 
-                    }, this.searchIterationTimeout_ms);
+                    setTimeout((function () { 
+                        nonBlockingSearch.call(this); 
+                    }).bind(this), this.searchIterationTimeout_ms);
                 }
                 else {
                     //console.log(foundTACs);
@@ -204,11 +203,9 @@ const IMEI_GenCheck = function(param_dbPath = '') {
                         find_resolve(null);
                     }
                 }
-            }
-
-            nonBlockingSearch(nonBlockingSearch);
-        });
-        }
+            }).call(this);
+        }).bind(this));
+        }).bind(this)
 
         // todo:
         this.findTACInfoByFields = (function (fields, strictSearch=false){
@@ -284,44 +281,48 @@ const IMEI_GenCheck = function(param_dbPath = '') {
         this.DB = [];
         this.DBisReady = false;
         //reading and parsing the csv
-        var parser = parse({delimiter: ','}, function (err, data) {
+        var parser = parse ( {delimiter: ','}, (function (err, data) {
             if(err!=null){
-                console.log(data);
+                console.log(err);
                 loadDB_reject(err);
             }
             async.eachSeries(data, (function (line, linecallback) {
-                let newTACinfo = {
-                    "tac":          line[0],
-                    "name1":        line[1],
-                    "name2":        line[2],
-                    "aka":          line[7],
-                    "gsmarena1":    line[5],
-                    "gsmarena2":    line[6],
-                    "comment":      line[3],
-                    "type":         ""
-                };
+                    let newTACinfo = {
+                        "tac":          line[0],
+                        "name1":        line[1],
+                        "name2":        line[2],
+                        "aka":          line[7],
+                        "gsmarena1":    line[5],
+                        "gsmarena2":    line[6],
+                        "comment":      line[3],
+                        "type":         ""
+                    };
 
-                if (newTACinfo.tac.length < this.minTAClength) {
-                    this.minTAClength = newTACinfo.tac.length;
-                }
-                if (newTACinfo.tac.length > this.maxTAClength) {
-                    this.maxTAClength = newTACinfo.tac.length;
-                }
+                    if (newTACinfo.tac.length < minTAClength) {
+                        minTAClength = newTACinfo.tac.length;
+                    }
+                    if (newTACinfo.tac.length > maxTAClength) {
+                        maxTAClength = newTACinfo.tac.length;
+                    }
 
-                this.DB.push(newTACinfo);
+                    this.DB.push(newTACinfo);
 
-                setImmediate(()=>{linecallback();});
-            }).bind(this),
-            ((err, rez)=>{
-                if (MODE_DEBUG) console.log("      DB loaded!");
-                if (MODE_DEBUG) console.log(`      There are ${this.DB.length} TACs.`);
-                this.DBisReady = true;
-        
-                initializeDatabaseFeatures.call(this);
-                
-                loadDB_resolve(this.DB.length);
-            }).bind(this));
-        }.bind(this));
+                    setImmediate(()=>{linecallback.call(this);});
+                }).bind(this),
+
+                ((err, rez)=>{
+                    if (MODE_DEBUG) console.log("      DB loaded!");
+                    if (MODE_DEBUG) console.log(`      There are ${this.DB.length} TACs.`);
+                    this.DBisReady = true;
+            
+                    initializeDatabaseFeatures.call(this);
+                    
+                    loadDB_resolve(this.DB.length);
+                }).bind(this)
+            );
+            
+            }).bind(this)
+        );
         csvDBStream = fs.createReadStream(tacdbFilePath);
         csvDBStream.pipe(parser);
     }).bind(this));
@@ -384,7 +385,10 @@ module.exports = IMEI_GenCheck;
 // igc.loadDB()
 // .then(rowcount=>{
 //     console.log(igc.DB.length);
-//     return igc.randomTACInfoWithVendorName("ASUS");
+//     return igc.findTACInfoByIMEI("499901012345671");
 //     //return igc.findTACInfoByFields(searchObj, strictSearch);
 // })
-// .then(rez=>console.log(JSON.stringify(rez, null, 2)));
+// .then(rez=>
+//     console.log(JSON.stringify(rez, null, 2))
+
+// );
