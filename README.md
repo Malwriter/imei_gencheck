@@ -22,7 +22,7 @@ This won't depend (i hope) on anything but:
 ## Usage
 
 To just randomize an IMEI:
-```JS
+```js
     const imeigc = require("imei_gencheck");
 
     console.log( // Should give the 15-digit id real fast
@@ -32,7 +32,7 @@ To just randomize an IMEI:
 _(this is likely to give an actually non-existent number)_
 <br /><br />
 Here is the code to get the gencheck **DB** up:
-```JS
+```js
     const imeigc = require("imei_gencheck");
 
     imeigc.loadDB()
@@ -43,7 +43,7 @@ Here is the code to get the gencheck **DB** up:
 <br />
 And after the DB was put into RAM, some special functions become available. For example:
 
-```JS
+```js
     console.log(
       // Fully randomize an IMEI using a random TAC. Takes like zero time so not async.
       imeigc.randomIMEI_TACfromDB()
@@ -52,7 +52,7 @@ And after the DB was put into RAM, some special functions become available. For 
 <br />
 And let us get something useful. Like a random iPhone 7 Plus IMEI:
 
-```JS
+```js
     imeigc.randomTACInfoWithNames("Apple", "iPhone 7 Plus")
     .then(imei=>{ // This involves a search in DB (which i didn't optimize (yet?) at all), so it's async:
         console.log(
@@ -67,7 +67,7 @@ In the folder "data" there is the DB used by the code. When it gets loaded, it i
     imeigc.DB
 ```
 And here is how the data from each .csv row is stored in the objects inside the array:
-```JS
+```js
     let newTACinfo = {
         "tac":          line[0],
         "name1":        line[1],
