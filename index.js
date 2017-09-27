@@ -123,10 +123,10 @@ const IMEI_GenCheck = function(param_dbPath = '') {
 
             recursiveTACSearch();
         });
-        }
+        };
 
-        this.randomTACInfoWithVendorName = function (name1) {
-        return new Promise((find_resolve, find_reject)=>{
+        this.randomTACInfoWithVendorName = (function (name1) {
+        return new Promise(((find_resolve, find_reject)=>{
             let nameToFind = name1.toLowerCase();
             let foundTACs = [];
 
@@ -134,7 +134,7 @@ const IMEI_GenCheck = function(param_dbPath = '') {
             let curIndex = 0;
             let perCycle = 1000;
 
-            let nonBlockingSearch = function (nonBlockingSearchCallBack) {
+            (function nonBlockingSearch() {
                 //console.log(Date.now());
                 for (let i = 0; i < perCycle; i++) {
                     if (curIndex + i === dblen) {
@@ -146,7 +146,11 @@ const IMEI_GenCheck = function(param_dbPath = '') {
                 }
                 curIndex += perCycle;
                 if (curIndex < dblen) {
-                    setTimeout(function () { nonBlockingSearchCallBack(nonBlockingSearchCallBack); }, this.searchIterationTimeout_ms);
+                    setTimeout(
+                        (function () { 
+                            nonBlockingSearch.call(this); 
+                        }).bind(this), 
+                        this.searchIterationTimeout_ms);
                 }
                 else {
                     //console.log(foundTACs);
@@ -157,11 +161,9 @@ const IMEI_GenCheck = function(param_dbPath = '') {
                         find_resolve(null);
                     }
                 }
-            }
-
-            nonBlockingSearch(nonBlockingSearch);
-        });
-        }
+            }).call(this);
+        }).bind(this));
+        }).bind(this)
 
         this.randomTACInfoWithNames = (name1, name2) => {
         return new Promise((find_resolve, find_reject)=>{
@@ -277,7 +279,7 @@ const IMEI_GenCheck = function(param_dbPath = '') {
     // This loads the TAC DB and makes related functions available
     // by calling the initializeDatabaseFeatures after the loading
     this.loadDB = function(){
-    return new Promise((loadDB_resolve, loadDB_reject)=>{
+    return new Promise(((loadDB_resolve, loadDB_reject)=>{
         if (MODE_DEBUG) console.log("      Loading the DB...");
         this.DB = [];
         this.DBisReady = false;
@@ -322,7 +324,7 @@ const IMEI_GenCheck = function(param_dbPath = '') {
         }.bind(this));
         csvDBStream = fs.createReadStream(tacdbFilePath);
         csvDBStream.pipe(parser);
-    });
+    }).bind(this));
     };
 };
 
@@ -374,14 +376,15 @@ module.exports = IMEI_GenCheck;
 
 // some implicit testing code for my debugging:
 
-const searchObj = {name1: "Nokia", aka:"1112b"};
-const strictSearch = false;
+// const searchObj = {name1: "Nokia", aka:"1112b"};
+// const strictSearch = false;
 
-let igc = new IMEI_GenCheck();
+// let igc = new IMEI_GenCheck();
 
-igc.loadDB()
-.then(rowcount=>{
-    console.log(igc.DB.length);
-    return igc.findTACInfoByFields(searchObj, strictSearch);
-})
-.then(foundTACs=>console.log(foundTACs.length));
+// igc.loadDB()
+// .then(rowcount=>{
+//     console.log(igc.DB.length);
+//     return igc.randomTACInfoWithVendorName("ASUS");
+//     //return igc.findTACInfoByFields(searchObj, strictSearch);
+// })
+// .then(rez=>console.log(JSON.stringify(rez, null, 2)));

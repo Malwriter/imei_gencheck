@@ -12,7 +12,7 @@ describe("IMEI generator and checker:", function (){
             .then(function (rowCount){
                 expect(rowCount).to.above(25000);
                 expect(igc.DB.length).to.above(25000);
-                expect(loadDB.DBisReady).to.equal(true);
+                expect(igc.DBisReady).to.equal(true);
                 done();
             });
         });
