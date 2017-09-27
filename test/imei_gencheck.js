@@ -4,7 +4,8 @@ const imei_gencheck = require("../index.js");
 
 describe("IMEI generator and checker:", function (){
     describe("(Using a TAC DB from tacdb.osmocom.org)", function (){
-        it("loads the DB on demand from a CSV file in 'data' dir, allowing other functions usage", function (done){
+        it("loads the DB on demand from a CSV file in 'data' dir, allowing other functions usage", 
+        function (done){ // Arrow function don't have access to "this". ¯\_(ツ)_/¯
             this.timeout(10000);
             imei_gencheck.loadDB()
             .then(rowCount=>{
@@ -41,7 +42,8 @@ describe("IMEI generator and checker:", function (){
             expect(imei.length).to.equal(15);
         });
 
-        it("Finds a TAC info for a given device vendor name",(done)=>{
+        it("Finds a TAC info for a given device vendor name",
+        function (done) {
             imei_gencheck.randomTACInfoWithVendorName("Nokia")
             .then( tacinfo => {
                 expect(tacinfo.name1.toLowerCase()).to.equal("nokia");
@@ -49,12 +51,32 @@ describe("IMEI generator and checker:", function (){
             });            
         });
 
-        it("Finds a TAC info for a given full device name (vendor and model as strings)",(done)=>{
+        it("Finds a TAC info for a given full device name (vendor and model as strings)",
+        function (done) {
             imei_gencheck.randomTACInfoWithNames("Nokia", "1100b")
             .then( tacinfo => {
                 expect(tacinfo.tac).to.equal("1037200");
                 done();
             });
+        });
+
+        it("Finds a TAC info for a given object with {field:value} for TAC parameters to search by",
+        function (done) {
+            const searchObj = {name1: "Nokia", aka:"1112b"};
+            imei_gencheck.findTACInfoByFields(searchObj)
+            .then(foundTACs=>{
+                expect(foundTACs.length).to.above(5);
+                expect(foundTACs[0].tac).to.equal("1108700");
+            })
+            .then(()=>{
+                const failObj = {name1: "###Non###", aka:"###Existent###"};
+                return imei_gencheck.findTACInfoByFields(failObj, true);
+            })
+            .then(foundTACs=>{
+                expect(foundTACs).to.equal(null);
+                done();
+            });
+
         });
 
         // TODO. This seems to require some datamining. The DB doesn't have device types so i need another DB.
@@ -72,7 +94,9 @@ describe("IMEI generator and checker:", function (){
             expect(corrected.length).to.equal(15);
         });
         
-        it("finds a given TAC in DB and returns a member from imei_gencheck.DB or null if fails to", function (done) {
+        it("finds a given TAC in DB and returns a member from imei_gencheck.DB or null if fails to", 
+        function (done) {
+            this.timeout(10000);
             imei_gencheck.findTACinfo("49013920")
             .then( tacinfo => {
                 expect(tacinfo).to.deep.equal(
@@ -84,7 +108,7 @@ describe("IMEI generator and checker:", function (){
                             aka: '1610+,1611,1611+,NHE-5NX',
                             gsmarena1: '',
                             gsmarena2: 'http://www.gsmarena.com/nokia-phones-1.php',
-                            comment: '',
+                            comment: 'OsmoDevCon 2014',
                             type: '' 
                         } 
                     ]
@@ -107,7 +131,7 @@ describe("IMEI generator and checker:", function (){
                             aka: '',
                             gsmarena1: '',
                             gsmarena2: '',
-                            comment: '',
+                            comment: 'OsmoTACDB client',
                             type: '' 
                         } 
                     ]

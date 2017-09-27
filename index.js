@@ -266,7 +266,9 @@ imei_gencheck.loadDB = () => {
                         }
                         curIndex += perCycle;
                         if (curIndex < dblen) {
-                            setTimeout(function () { nonBlockingSearchCallBack(nonBlockingSearchCallBack); }, imei_gencheck.searchIterationTimeout_ms);
+                            setTimeout(function () { 
+                                nonBlockingSearchCallBack(nonBlockingSearchCallBack); 
+                            }, imei_gencheck.searchIterationTimeout_ms);
                         }
                         else {
                             //console.log(foundTACs);
@@ -284,9 +286,62 @@ imei_gencheck.loadDB = () => {
                 }
 
                 // todo:
-                //imei_gencheck.findTACInfoByFields(fields, outerCallback){
-                //
-                //}
+                imei_gencheck.findTACInfoByFields = function (fields, strictSearch=false){
+                return new Promise((find_resolve, find_reject)=>{
+                    let foundTACs = [];
+
+                    let curIndex = 0;
+                    let perCycle = 1000;
+                    let dblen = imei_gencheck.DB.length;
+
+                    function matchRow2Fields(row, fields, strictMatch){
+                        for(fld in fields){
+                            if ((function(){
+                                if(strictMatch){
+                                    return  row[fld].toLowerCase()
+                                            !==
+                                            fields[fld].toLowerCase() 
+                                }else{
+                                    return  row[fld].toLowerCase()
+                                            .indexOf(fields[fld].toLowerCase()) 
+                                            === -1;
+                                }
+                            })()){
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+
+                    (function recursiveNonBlockingSearch(){
+                        
+
+                        for(let i=0; (i<perCycle) && (i+curIndex<dblen); i++ ){
+                            if(matchRow2Fields(
+                                imei_gencheck.DB[i+curIndex], 
+                                fields, 
+                                strictSearch))
+                            {
+                                foundTACs.push(imei_gencheck.DB[i+curIndex]);
+                            }
+                        }
+                        curIndex+=perCycle;
+                        
+                        
+                        if(curIndex < dblen){
+                            setTimeout(function () {
+                                recursiveNonBlockingSearch();
+                            }, imei_gencheck.searchIterationTimeout_ms);
+                        }else{
+                            if (foundTACs.length > 0) {
+                                find_resolve(foundTACs);
+                            } else {
+                                find_resolve(null);
+                            }
+                        }
+                    })();
+                });
+                }
                 
                 loadDB_resolve(imei_gencheck.DB.length);
             });
@@ -299,7 +354,9 @@ imei_gencheck.loadDB = () => {
 module.exports = imei_gencheck;
 
 // some implicit testing code for my debugging:
+// const searchObj = {name1: "Nokia", aka:"1112b"};
+
 // imei_gencheck.loadDB()
-// .then(rowcount=>imei_gencheck.findTACInfoByIMEI("499901012345671")
-// .then(tacinfo=>console.log(JSON.stringify(tacinfo)))
+// .then(rowcount=>imei_gencheck.findTACInfoByFields(searchObj)
+// .then(tacinfo=>console.log(JSON.stringify(tacinfo, null, 2)))
 // );
