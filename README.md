@@ -61,6 +61,19 @@ And let us get something useful. Like a random iPhone 7 Plus IMEI:
     });
 ```
 
+And with the 3.1 here came a possibility to search by fields set:
+**findTACInfoByFields**
+```js
+const searchObj = {name1: "Nokia", aka:"1112b"};
+const strictSearch = false; // Searching with string's indexOf() method
+// FALSE is the default value. With TRUE the search will use === operator
+// (will perform toLowerCase() anyway tho)
+
+imei_gencheck.loadDB()
+.then(rowcount=>imei_gencheck.findTACInfoByFields(searchObj, strictSearch))
+.then(foundTACs=>console.log(foundTACs.length));
+```
+
 ## Data
 In the folder "data" there is the DB used by the code. When it gets loaded, it is put into an array
 ```js

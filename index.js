@@ -355,8 +355,7 @@ module.exports = imei_gencheck;
 
 // some implicit testing code for my debugging:
 // const searchObj = {name1: "Nokia", aka:"1112b"};
-
+// const strictSearch = false;
 // imei_gencheck.loadDB()
-// .then(rowcount=>imei_gencheck.findTACInfoByFields(searchObj)
-// .then(tacinfo=>console.log(JSON.stringify(tacinfo, null, 2)))
-// );
+// .then(rowcount=>imei_gencheck.findTACInfoByFields(searchObj, strictSearch))
+// .then(foundTACs=>console.log(foundTACs.length));
