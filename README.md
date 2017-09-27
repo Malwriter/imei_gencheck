@@ -96,5 +96,5 @@ And here is how the data from each .csv row is stored in the objects inside the 
 ## Features
 You can read the tests code in the file inside "test" directory. It pretty much sums up the possibilities and provides usage examples.
 
-**As of 1.0.0** (For 3.x.x the feature set didn't change):
-![Not an image of Yaktocat](https://user-images.githubusercontent.com/31159979/29488858-f80aa51e-851b-11e7-87c3-4471a01e8fb8.PNG)
+**As of 3.1** (Not very much new from 1.0.0, though not compatible with that already):
+![Not an image of Yaktocat!](https://user-images.githubusercontent.com/31159979/30911496-85627fde-a391-11e7-9702-efb936e4743a.PNG)
