@@ -106,4 +106,4 @@ To load from some other .csv file (which is now supported through a constructor 
 You can read the tests code in the file inside "test" directory. It pretty much sums up the possibilities and provides usage examples.
 
 **As of 4.0** (Not very much new from 1.0.0, though not compatible with that already):
-![Not an image of Yaktocat!](https://user-images.githubusercontent.com/31159979/30911496-85627fde-a391-11e7-9702-efb936e4743a.PNG)
+![Not an image of Yaktocat!](https://user-images.githubusercontent.com/31159979/30954952-ae1ea8a4-a43a-11e7-8be6-4153a347bc28.PNG)
