@@ -4,7 +4,7 @@ The module exposes a class IMEI_GenCheck(sure You name it on requiring), which i
 for constructing an actual object providing the features You can find below. Basically, the
 object has features for IMEI generating and checking; exposes a comfortable interface to the TAC DB,
 allowing to search through it. But to actually use the DB this way, You'll need to invoke **loadDB()**
-method and wait for the returned Promise to resolve with the count of rows loaded into the DB property.
+method and wait for the returned Promise to resolve with the count of rows loaded into the DB property.<br/>
 Enough of intro, just behold **usage examples down there.**
 
 ## Install
