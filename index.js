@@ -90,7 +90,7 @@ const IMEI_GenCheck = function(param_dbPath = '') {
         }).bind(this));
         }).bind(this);
 
-        //todo: this one is begging for some parallelism
+        //todo: this one is begging for some parallelism, thogh after the fix looks as good as the others
         this.findTACInfoByIMEI = ((imei) => {
         return new Promise(((find_resolve, find_reject)=>{
             

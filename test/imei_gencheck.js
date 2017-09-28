@@ -44,7 +44,7 @@ describe("IMEI generator and checker:", function (){
             expect(imei.length).to.equal(15);
         });
 
-        it("Finds a TAC info for a given device vendor name",
+        it("finds a TAC info for a given device vendor name",
         function (done) {
             igc.randomTACInfoWithVendorName("Nokia")
             .then( tacinfo => {
@@ -53,7 +53,7 @@ describe("IMEI generator and checker:", function (){
             });            
         });
 
-        it("Finds a TAC info for a given full device name (vendor and model as strings)",
+        it("finds a TAC info for a given full device name (vendor and model as strings)",
         function (done) {
             igc.randomTACInfoWithNames("Nokia", "1100b")
             .then( tacinfo => {
@@ -62,7 +62,7 @@ describe("IMEI generator and checker:", function (){
             });
         });
 
-        it("Finds a TAC info for a given object with {field:value} for TAC parameters to search by",
+        it("finds a TAC info for a given object with {field:value} for TAC parameters to search by",
         function (done) {
             const searchObj = {name1: "Nokia", aka:"1112b"};
             igc.findTACInfoByFields(searchObj)
