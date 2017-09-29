@@ -11,12 +11,17 @@ describe("IMEI generator and checker:", function (){
             igc.loadDB()
             .then(function (rowCount){
                 expect(rowCount).to.above(25000);
-                //expect(igc.DB.length).to.above(25000);
+                expect(igc.getDB().length).to.above(25000);
                 //expect(igc.DBisReady).to.equal(true);
                 done();
             });
         });
+        it("allows direct access to the DB array in memory (doesn't affect the file)", 
+        function (){
+            expect(igc.getDB().length).to.above(25000);
+        });
     });
+    
     describe("(Generating randomized TACs and IMEIs)", ()=>{
         it("creates the next IMEI number from a given TAC and an IMEI",()=>{
             let imei = IMEI_Gencheck.nextIMEI("12345", "123451999999995");
@@ -32,19 +37,21 @@ describe("IMEI generator and checker:", function (){
             let imei = igc.randomIMEI_TACfromDB();
             expect(imei.length).to.equal(15);
         });
-        
-        it("randomly outputs a known TAC from the DB",()=>{
-            let tacinfo = igc.randomTACInfoFromDB();
-            expect(typeof tacinfo).to.equal("object");
-            expect(tacinfo.tac.length).to.above(4);
-        });
 
         it("randomizes an IMEI for a given TAC",()=>{
             let imei = IMEI_Gencheck.randomIMEIwithTAC("12345");
             expect(imei.length).to.equal(15);
         });
 
-        it("finds TACs for a given device vendor name",
+        it("randomly outputs a known TAC info obj from the DB",()=>{
+            let tacinfo = igc.randomTACInfoFromDB();
+            expect(typeof tacinfo).to.equal("object");
+            expect(tacinfo.tac.length).to.above(4);
+        });
+    });
+
+    describe("(Searching by special fields in DB)", ()=>{
+        it("finds info for a given device vendor name",
         function (done) {
             igc.findTACInfosWithVendorName("Nokia")
             .then( tacinfo => {
@@ -54,7 +61,7 @@ describe("IMEI generator and checker:", function (){
             });            
         });
 
-        it("finds a TAC info for a given full device name (vendor and model as strings)",
+        it("finds info for a given full device name (vendor and model as strings)",
         function (done) {
             igc.findTACsWithFullName("Nokia", "1100b")
             .then( tacinfo => {
@@ -64,7 +71,7 @@ describe("IMEI generator and checker:", function (){
             });
         });
 
-        it("finds a TAC info for a given object with {field:value} for TAC parameters to search by",
+        it("finds info for a given object with {field:value} for TAC parameters to search by",
         function (done) {
             const searchObj = {name1: "Nokia", aka:"1112b"};
             igc.findTACInfosByFields(searchObj)
@@ -85,6 +92,7 @@ describe("IMEI generator and checker:", function (){
             });
 
         });
+    });
 
         // TODO. This seems to require some datamining. The DB doesn't have device types so i need another DB.
         // Also it seems like some vendors just make different device types on a single TAC.
@@ -92,7 +100,7 @@ describe("IMEI generator and checker:", function (){
         //     let imei = imei_gencheck.randomTACInfoWithDeviceType("Smartphone");
         //     expect(imei.length).to.equal(15);
         // });
-    });
+
 
     describe("(Checking TACs and IMEIs)", ()=>{
         it("checks if a given 15-digit string has the correct Luhn digit, returns an IMEI with correct(ed) Luhn digit", ()=>{

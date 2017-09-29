@@ -18,7 +18,7 @@ class IMEI_GenCheck{
     // I have no idea how full is it. But it has my phone vendor's TACs.
     let tacdbFilePath;
     if(param_dbPath === ''){
-        tacdbFilePath= __dirname + '/data/tacdb_consistent_sorted_clear.csv';
+        tacdbFilePath = __dirname + '/data/tacdb_consistent_sorted_clear.csv';
     }else{
         tacdbFilePath = param_dbPath;
     }
@@ -103,7 +103,11 @@ class IMEI_GenCheck{
 
     // This is called when the DB is already in RAM from inside LoadDB()
     // Initializes all the features accessing the database.
-    const initializeDatabaseFeatures = function(){
+    function internal_initializeDatabaseFeatures(){
+        this.getDB = () =>{
+            return _DB;
+        }
+
         this.randomIMEI_TACfromDB = () => {
             let tacFromDB_id = Math.floor(Math.random() * _DB.length);
             let tacFromDB = _DB[tacFromDB_id].tac;
@@ -229,7 +233,7 @@ class IMEI_GenCheck{
                     if (MODE_DEBUG) console.log(`      There are ${_DB.length} TACs.`);
                     this.DBisReady = true;
             
-                    initializeDatabaseFeatures.call(this);
+                    internal_initializeDatabaseFeatures.call(this);
                     
                     loadDB_resolve(_DB.length);
                 }).bind(this)
@@ -243,8 +247,10 @@ class IMEI_GenCheck{
     };
 };
 
+    // ############## PUBLIC STATIC MEMBERS ##############
+    //                         \/
     // These public methods are able to work without the database, they are just IMEI utilities.
-    // That's why they are static and usable directly from the class definition
+    // That's why they are static -- usable directly from the class definition
     static fixIMEI(imei){
         if (imei.length === 15 && checkdigit.mod10.isValid(imei)){
             return imei;
