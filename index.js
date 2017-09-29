@@ -43,6 +43,10 @@ class IMEI_GenCheck{
             return checkdigit.mod10.apply(rez_withoutLuhn);
         }
 
+
+        // ############## PUBLIC MEMBERS ##############
+        //                     \ /
+
         this.randomTACInfoFromDB = ()=>{
             let tacFromDB_id = Math.floor(Math.random() * this.DB.length);
             return this.DB[tacFromDB_id];
@@ -268,8 +272,6 @@ class IMEI_GenCheck{
         }).bind(this);
     }
 
-    // ############## PUBLIC MEMBERS ##############
-    //                     \ /
     
 
     // Becomes true when DB has been loaded
