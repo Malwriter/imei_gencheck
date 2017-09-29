@@ -11,8 +11,8 @@ describe("IMEI generator and checker:", function (){
             igc.loadDB()
             .then(function (rowCount){
                 expect(rowCount).to.above(25000);
-                expect(igc.DB.length).to.above(25000);
-                expect(igc.DBisReady).to.equal(true);
+                //expect(igc.DB.length).to.above(25000);
+                //expect(igc.DBisReady).to.equal(true);
                 done();
             });
         });
@@ -44,20 +44,22 @@ describe("IMEI generator and checker:", function (){
             expect(imei.length).to.equal(15);
         });
 
-        it("finds a TAC info for a given device vendor name",
+        it("finds TACs for a given device vendor name",
         function (done) {
-            igc.randomTACInfoWithVendorName("Nokia")
+            igc.findTACInfosWithVendorName("Nokia")
             .then( tacinfo => {
-                expect(tacinfo.name1.toLowerCase()).to.equal("nokia");
+                expect(tacinfo.length).to.above(10);
+                expect(tacinfo[0].name1.toLowerCase()).to.equal("nokia");
                 done();
             });            
         });
 
         it("finds a TAC info for a given full device name (vendor and model as strings)",
         function (done) {
-            igc.randomTACInfoWithNames("Nokia", "1100b")
+            igc.findTACsWithFullName("Nokia", "1100b")
             .then( tacinfo => {
-                expect(tacinfo.tac).to.equal("1037200");
+                expect(tacinfo.length).to.equal(1);
+                expect(tacinfo[0].tac).to.equal("1037200");
                 done();
             });
         });
@@ -65,14 +67,14 @@ describe("IMEI generator and checker:", function (){
         it("finds a TAC info for a given object with {field:value} for TAC parameters to search by",
         function (done) {
             const searchObj = {name1: "Nokia", aka:"1112b"};
-            igc.findTACInfoByFields(searchObj)
+            igc.findTACInfosByFields(searchObj)
             .then(foundTACs=>{
                 expect(foundTACs.length).to.above(5);
                 expect(foundTACs[0].tac).to.equal("1108700");
             })
             .then(()=>{
                 const failObj = {name1: "###Non###", aka:"###Existent###"};
-                return igc.findTACInfoByFields(failObj, true);
+                return igc.findTACInfosByFields(failObj, true);
             })
             .then(foundTACs=>{
                 expect(foundTACs).to.equal(null);

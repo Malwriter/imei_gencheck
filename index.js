@@ -12,6 +12,8 @@ class IMEI_GenCheck{
     // ############## PRIVATE MEMBERS ##############
     //                      \ /
 
+    let _DB = [];
+
     // The original database is (at least it was) available from tacdb.osmocom.org
     // I have no idea how full is it. But it has my phone vendor's TACs.
     let tacdbFilePath;
@@ -29,12 +31,82 @@ class IMEI_GenCheck{
     let minTAClength = 15;
     let maxTAClength = 0;
 
+    function internal_matchRow2Fields(row, fields, strictMatch){
+        for(let fld in fields){
+            if ((function(){
+                if(strictMatch){
+                    return  row[fld].toLowerCase()
+                            !==
+                            fields[fld].toLowerCase() 
+                }else{
+                    return  row[fld].toLowerCase()
+                            .indexOf(fields[fld].toLowerCase()) 
+                            === -1;
+                }
+            })()){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function internal_recursive_NonBlocking_SearchByFields
+    (fields, strictSearch, 
+    curIndex, perCycle, dblen, foundTACs, 
+    find_resolve, find_reject){
+        for(let i=0; (i<perCycle) && (i+curIndex < dblen); i++ ){
+            if(
+                internal_matchRow2Fields(
+                    _DB[i+curIndex], 
+                    fields, 
+                    strictSearch
+                )
+            ){
+                foundTACs.push(_DB[i+curIndex]);
+            }
+        }
+        curIndex+=perCycle;
+        
+        
+        if(curIndex < dblen){
+            setTimeout(function () {
+                internal_recursive_NonBlocking_SearchByFields(
+                    fields, strictSearch, 
+                    curIndex, perCycle, dblen, foundTACs, 
+                    find_resolve, find_reject);
+            }, searchIterationTimeout_ms);
+        }else{
+            if (foundTACs.length > 0) {
+                find_resolve(foundTACs);
+            } else {
+                find_resolve(null);
+            }
+        }
+    }
+
+    function internal_searchByFields(fields, strictSearch=false){
+    return new Promise((find_resolve, find_reject)=>{
+        let foundTACs = [];
+
+        let curIndex = 0;
+        let perCycle = 1000;
+        let dblen = _DB.length;
+
+        internal_recursive_NonBlocking_SearchByFields(
+            fields, strictSearch, 
+            curIndex, perCycle, dblen, foundTACs,
+            find_resolve, find_reject
+        )
+    });
+    }
+    
+
     // This is called when the DB is already in RAM from inside LoadDB()
     // Initializes all the features accessing the database.
     const initializeDatabaseFeatures = function(){
         this.randomIMEI_TACfromDB = () => {
-            let tacFromDB_id = Math.floor(Math.random() * this.DB.length);
-            let tacFromDB = this.DB[tacFromDB_id].tac;
+            let tacFromDB_id = Math.floor(Math.random() * _DB.length);
+            let tacFromDB = _DB[tacFromDB_id].tac;
             let rez_withoutLuhn = tacFromDB;
             while (rez_withoutLuhn.length < 14) {
                 let newDigit = Math.floor(Math.random() * 10);
@@ -48,8 +120,8 @@ class IMEI_GenCheck{
         //                     \ /
 
         this.randomTACInfoFromDB = ()=>{
-            let tacFromDB_id = Math.floor(Math.random() * this.DB.length);
-            return this.DB[tacFromDB_id];
+            let tacFromDB_id = Math.floor(Math.random() * _DB.length);
+            return _DB[tacFromDB_id];
         }
 
         // TODO. This seems to require some datamining. The DB doesn't have device types so i need another DB.
@@ -60,58 +132,25 @@ class IMEI_GenCheck{
 
         // *** FINDERS ***
 
-        this.findTACinfo = ((tacToFind) => {
-        return new Promise(((find_resolve, find_reject)=>{
-            let foundTACs = [];
-
-            let dblen = this.DB.length;
-            let curIndex = 0;
-            let perCycle = 1000;
-
-            (function nonBlockingSearch () {
-                for (let i = 0; i < perCycle; i++) {
-                    if (curIndex + i === dblen) {
-                        break;
-                    }
-                    if (this.DB[curIndex + i].tac === tacToFind) {
-                        foundTACs.push(this.DB[curIndex + i]);
-                    }
-                }
-                curIndex += perCycle;
-                if (curIndex < dblen) {
-                    setTimeout(
-                        (function () { 
-                            nonBlockingSearch.call(this); 
-                        }).bind(this), this.searchIterationTimeout_ms);
-                }
-                else {
-                    if (foundTACs.length > 0) {
-                        find_resolve(foundTACs);
-                    } else {
-                        find_resolve(null);
-                    }
-                }
-            }).call(this);
-        }).bind(this));
-        }).bind(this);
+        this.findTACinfo = (tacToFind) => {
+            return internal_searchByFields({"tac": tacToFind});
+        }
 
         //todo: this one is begging for some parallelism, thogh after the fix looks as good as the others
-        this.findTACInfoByIMEI = ((imei) => {
-        return new Promise(((find_resolve, find_reject)=>{
-            
-            let curTAClength = minTAClength;
+        this.findTACInfoByIMEI = (imei) => {
+        return new Promise((find_resolve, find_reject)=>{
             let foundTACs = [];
+            let curTAClength = minTAClength;
 
-             (function recursiveTACSearch() {
-                
+            (function recursiveTACSearch() {
                 let tacToFind = imei.substr(0, curTAClength);
 
-                this.findTACinfo(tacToFind)
-                .then((function (iteration_foundTACs){
-                    if (iteration_foundTACs != null) {
-                        for (let i = 0; i < iteration_foundTACs.length; i++) {
-                            foundTACs.push(iteration_foundTACs[i]);
-                        }
+                internal_searchByFields({"tac": tacToFind})
+                .then(iteration_foundTACs => {
+                    if (iteration_foundTACs !== null) {
+                        iteration_foundTACs.forEach((tacinfo)=>{
+                            foundTACs.push(tacinfo);
+                        });
                     }
 
                     curTAClength++;
@@ -122,168 +161,39 @@ class IMEI_GenCheck{
                             find_resolve(null);
                         }
                     } else {
-                        recursiveTACSearch.call(this);
+                        recursiveTACSearch();
                     }
-                }).bind(this));
-            }).call(this);
-        }).bind(this));
-        }).bind(this);
+                });
+            })();
+        });
+        }
 
-        this.randomTACInfoWithVendorName = (function (name1) {
-        return new Promise(((find_resolve, find_reject)=>{
-            let nameToFind = name1.toLowerCase();
-            let foundTACs = [];
+        this.findTACInfosWithVendorName = function (name1) {
+            return internal_searchByFields({"name1": name1});
+        }
 
-            let dblen = this.DB.length;
-            let curIndex = 0;
-            let perCycle = 1000;
-
-            (function nonBlockingSearch() {
-                //console.log(Date.now());
-                for (let i = 0; i < perCycle; i++) {
-                    if (curIndex + i === dblen) {
-                        break;
-                    }
-                    if (this.DB[curIndex + i].name1.toLowerCase() === nameToFind) {
-                        foundTACs.push(this.DB[curIndex + i]);
-                    }
-                }
-                curIndex += perCycle;
-                if (curIndex < dblen) {
-                    setTimeout(
-                        (function () { 
-                            nonBlockingSearch.call(this); 
-                        }).bind(this), 
-                        this.searchIterationTimeout_ms);
-                }
-                else {
-                    //console.log(foundTACs);
-                    if (foundTACs.length > 0) {
-                        const chosenTACInfoID = Math.floor(Math.random() * foundTACs.length)
-                        find_resolve(foundTACs[chosenTACInfoID]);
-                    } else {
-                        find_resolve(null);
-                    }
-                }
-            }).call(this);
-        }).bind(this));
-        }).bind(this)
-
-        this.randomTACInfoWithNames = (function(name1, name2) {
-        return new Promise(((find_resolve, find_reject)=>{
-            let nameToFind1 = name1.toLowerCase();
-            let nameToFind2 = name2.toLowerCase();
-            let foundTACs = [];
-
-            let dblen = this.DB.length;
-            let curIndex = 0;
-            let perCycle = 1000;
-
-            (function nonBlockingSearch() {
-                //console.log(Date.now());
-                for (let i = 0; i < perCycle; i++) {
-                    if (curIndex + i === dblen) {
-                        break;
-                    }
-                    if (
-                        (this.DB[curIndex + i].name1.toLowerCase() === nameToFind1)
-                        &&
-                        (this.DB[curIndex + i].name2.toLowerCase() === nameToFind2)
-                    ) {
-                        foundTACs.push(this.DB[curIndex + i]);
-                    }
-                }
-                curIndex += perCycle;
-                if (curIndex < dblen) {
-                    setTimeout((function () { 
-                        nonBlockingSearch.call(this); 
-                    }).bind(this), this.searchIterationTimeout_ms);
-                }
-                else {
-                    //console.log(foundTACs);
-                    if (foundTACs.length > 0) {
-                        const chosenTACInfoID = Math.floor(Math.random() * foundTACs.length)
-                        find_resolve(foundTACs[chosenTACInfoID]);
-                    } else {
-                        find_resolve(null);
-                    }
-                }
-            }).call(this);
-        }).bind(this));
-        }).bind(this)
+        this.findTACsWithFullName = function(name1, name2) {
+            return internal_searchByFields({"name1": name1, "name2": name2});
+        }
 
         // todo:
-        this.findTACInfoByFields = (function (fields, strictSearch=false){
-        return new Promise(((find_resolve, find_reject)=>{
-            let foundTACs = [];
-
-            let curIndex = 0;
-            let perCycle = 1000;
-            let dblen = this.DB.length;
-
-            function matchRow2Fields(row, fields, strictMatch){
-                for(let fld in fields){
-                    if ((function(){
-                        if(strictMatch){
-                            return  row[fld].toLowerCase()
-                                    !==
-                                    fields[fld].toLowerCase() 
-                        }else{
-                            return  row[fld].toLowerCase()
-                                    .indexOf(fields[fld].toLowerCase()) 
-                                    === -1;
-                        }
-                    })()){
-                        return false;
-                    }
-                }
-                return true;
-            }
-
-            (function recursiveNonBlockingSearch(){
-                
-
-                for(let i=0; (i<perCycle) && (i+curIndex<dblen); i++ ){
-                    if(
-                        matchRow2Fields(
-                        this.DB[i+curIndex], 
-                        fields, 
-                        strictSearch)
-                    ){
-                        foundTACs.push(this.DB[i+curIndex]);
-                    }
-                }
-                curIndex+=perCycle;
-                
-                
-                if(curIndex < dblen){
-                    setTimeout((function () {
-                        recursiveNonBlockingSearch.call(this);
-                    }).bind(this), this.searchIterationTimeout_ms);
-                }else{
-                    if (foundTACs.length > 0) {
-                        find_resolve(foundTACs);
-                    } else {
-                        find_resolve(null);
-                    }
-                }
-            }).call(this);
-        }).bind(this));
-        }).bind(this);
+        this.findTACInfosByFields = function (fields, strictSearch=false){
+            return internal_searchByFields(fields, strictSearch);
+        }
     }
 
     
 
     // Becomes true when DB has been loaded
-    this.DBisReady = false;
+    let _DBisReady = false;
 
     // This loads the TAC DB and makes related functions available
     // by calling the initializeDatabaseFeatures after the loading
     this.loadDB = function(){
     return new Promise(((loadDB_resolve, loadDB_reject)=>{
         if (MODE_DEBUG) console.log("      Loading the DB...");
-        this.DB = [];
-        this.DBisReady = false;
+        _DB = [];
+        _DBisReady = false;
         //reading and parsing the csv
         var parser = parse ( {delimiter: ','}, (function (err, data) {
             if(err!=null){
@@ -309,19 +219,19 @@ class IMEI_GenCheck{
                         maxTAClength = newTACinfo.tac.length;
                     }
 
-                    this.DB.push(newTACinfo);
+                    _DB.push(newTACinfo);
 
                     setImmediate(()=>{linecallback.call(this);});
                 }).bind(this),
 
                 ((err, rez)=>{
                     if (MODE_DEBUG) console.log("      DB loaded!");
-                    if (MODE_DEBUG) console.log(`      There are ${this.DB.length} TACs.`);
+                    if (MODE_DEBUG) console.log(`      There are ${_DB.length} TACs.`);
                     this.DBisReady = true;
             
                     initializeDatabaseFeatures.call(this);
                     
-                    loadDB_resolve(this.DB.length);
+                    loadDB_resolve(_DB.length);
                 }).bind(this)
             );
             
@@ -385,9 +295,10 @@ module.exports = IMEI_GenCheck;
 
 // igc.loadDB()
 // .then(rowcount=>{
-//     console.log(igc.DB.length);
-//     //return igc.findTACInfoByIMEI("499901012345671");
-//     return igc.findTACInfoByFields(searchObj, strictSearch);
+//     console.log(rowcount);
+//     return igc.findTACInfoByIMEI("499901012345671");
+//     //return igc.findTACInfoByFields(searchObj, strictSearch);
+//     //return igc.randomTACInfoWithNames("Nokia", "1100b");
 // })
 // .then(rez=>
 //     console.log(JSON.stringify(rez, null, 2))
