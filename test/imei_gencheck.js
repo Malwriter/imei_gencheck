@@ -19,12 +19,12 @@ describe("IMEI generator and checker:", function (){
     });
     describe("(Generating randomized TACs and IMEIs)", ()=>{
         it("creates the next IMEI number from a given TAC and an IMEI",()=>{
-            let imei = igc.nextIMEI("12345", "123451999999995");
+            let imei = IMEI_Gencheck.nextIMEI("12345", "123451999999995");
             expect(imei).to.equal("123452000000005");
         });
         
         it("fully randomizes an IMEI (likely to be non-existent)",()=>{
-            let imei = igc.randomIMEI_fullRandom();
+            let imei = IMEI_Gencheck.randomIMEI_fullRandom();
             expect(imei.length).to.equal(15);
         });
 
@@ -40,7 +40,7 @@ describe("IMEI generator and checker:", function (){
         });
 
         it("randomizes an IMEI for a given TAC",()=>{
-            let imei = igc.randomIMEIwithTAC("12345");
+            let imei = IMEI_Gencheck.randomIMEIwithTAC("12345");
             expect(imei.length).to.equal(15);
         });
 
@@ -94,7 +94,7 @@ describe("IMEI generator and checker:", function (){
 
     describe("(Checking TACs and IMEIs)", ()=>{
         it("checks if a given 15-digit string has the correct Luhn digit, returns an IMEI with correct(ed) Luhn digit", ()=>{
-            let corrected = igc.fixIMEI("123456789012345");
+            let corrected = IMEI_Gencheck.fixIMEI("123456789012345");
             expect(corrected).to.not.equal("123456789012345");
             expect(corrected.length).to.equal(15);
         });

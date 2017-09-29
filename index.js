@@ -7,7 +7,8 @@ const checkdigit = require('checkdigit');
 
 const MODE_DEBUG = false;
 
-const IMEI_GenCheck = function(param_dbPath = '') {
+class IMEI_GenCheck{
+    constructor(param_dbPath = '') {
     // ############## PRIVATE MEMBERS ##############
     //                      \ /
 
@@ -154,7 +155,7 @@ const IMEI_GenCheck = function(param_dbPath = '') {
                 else {
                     //console.log(foundTACs);
                     if (foundTACs.length > 0) {
-                        chosenTACInfoID = Math.floor(Math.random() * foundTACs.length)
+                        const chosenTACInfoID = Math.floor(Math.random() * foundTACs.length)
                         find_resolve(foundTACs[chosenTACInfoID]);
                     } else {
                         find_resolve(null);
@@ -197,7 +198,7 @@ const IMEI_GenCheck = function(param_dbPath = '') {
                 else {
                     //console.log(foundTACs);
                     if (foundTACs.length > 0) {
-                        chosenTACInfoID = Math.floor(Math.random() * foundTACs.length)
+                        const chosenTACInfoID = Math.floor(Math.random() * foundTACs.length)
                         find_resolve(foundTACs[chosenTACInfoID]);
                     } else {
                         find_resolve(null);
@@ -217,7 +218,7 @@ const IMEI_GenCheck = function(param_dbPath = '') {
             let dblen = this.DB.length;
 
             function matchRow2Fields(row, fields, strictMatch){
-                for(fld in fields){
+                for(let fld in fields){
                     if ((function(){
                         if(strictMatch){
                             return  row[fld].toLowerCase()
@@ -239,11 +240,12 @@ const IMEI_GenCheck = function(param_dbPath = '') {
                 
 
                 for(let i=0; (i<perCycle) && (i+curIndex<dblen); i++ ){
-                    if(matchRow2Fields(
+                    if(
+                        matchRow2Fields(
                         this.DB[i+curIndex], 
                         fields, 
-                        strictSearch))
-                    {
+                        strictSearch)
+                    ){
                         foundTACs.push(this.DB[i+curIndex]);
                     }
                 }
@@ -323,17 +325,15 @@ const IMEI_GenCheck = function(param_dbPath = '') {
             
             }).bind(this)
         );
-        csvDBStream = fs.createReadStream(tacdbFilePath);
+        const csvDBStream = fs.createReadStream(tacdbFilePath);
         csvDBStream.pipe(parser);
     }).bind(this));
     };
 };
 
-// Hello my name is Malwriter and i love using IIFE for code folding (Applause)
-// These public methods are able to work without the database, they are just IMEI utilities.
-// That's why they are on the Prototype of the class.
-(function PublicMethods_CreateOnPrototype(){
-    IMEI_GenCheck.prototype.fixIMEI = (imei)=>{
+    // These public methods are able to work without the database, they are just IMEI utilities.
+    // That's why they are static and usable directly from the class definition
+    static fixIMEI(imei){
         if (imei.length === 15 && checkdigit.mod10.isValid(imei)){
             return imei;
         }
@@ -343,16 +343,14 @@ const IMEI_GenCheck = function(param_dbPath = '') {
         }
     }
 
-
-    IMEI_GenCheck.prototype.nextIMEI = (tac, prev_imei) => {
+    static nextIMEI(tac, prev_imei){
         let serial_str = prev_imei.substr(tac.length, 14 - tac.length);
         let new_serial_int = parseInt(serial_str) + 1;
         let rez_withoutLuhn = tac + "" + new_serial_int;
         return checkdigit.mod10.apply(rez_withoutLuhn);
     }
 
-
-    IMEI_GenCheck.prototype.randomIMEI_fullRandom = () => {
+    static randomIMEI_fullRandom(){
         let rez_withoutLuhn = "";
         for (let i = 0; i < 14; i++)
         {
@@ -362,7 +360,7 @@ const IMEI_GenCheck = function(param_dbPath = '') {
         return checkdigit.mod10.apply(rez_withoutLuhn);
     }
 
-    IMEI_GenCheck.prototype.randomIMEIwithTAC = (tac)=>{
+    static randomIMEIwithTAC(tac){
         let rez_withoutLuhn = tac;
         while (rez_withoutLuhn.length < 14) {
             let newDigit = Math.floor(Math.random() * 10);
@@ -370,7 +368,8 @@ const IMEI_GenCheck = function(param_dbPath = '') {
         }
         return checkdigit.mod10.apply(rez_withoutLuhn);
     }
-})();
+
+}
 
 module.exports = IMEI_GenCheck;
 
@@ -385,8 +384,8 @@ module.exports = IMEI_GenCheck;
 // igc.loadDB()
 // .then(rowcount=>{
 //     console.log(igc.DB.length);
-//     return igc.findTACInfoByIMEI("499901012345671");
-//     //return igc.findTACInfoByFields(searchObj, strictSearch);
+//     //return igc.findTACInfoByIMEI("499901012345671");
+//     return igc.findTACInfoByFields(searchObj, strictSearch);
 // })
 // .then(rez=>
 //     console.log(JSON.stringify(rez, null, 2))
